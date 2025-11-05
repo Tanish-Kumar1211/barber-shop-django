@@ -1,0 +1,161 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-md-4"> 
+    <div class="text-center mb-4">
+        <h2 class="gradient-text mb-0 py-2">Dashboard</h2>
+        <div class='d-flex justify-content-center align-items-center mt-3'>
+            <a href="/admin/barber/service/add/" class="btn btn-custom-dashboard-purple">
+                <i class="fas fa-plus me-1"></i> Add Service
+            </a>
+            <a href="/admin/barber/staff/add/" class="btn btn-custom-dashboard-purple  ms-2">
+                <i class="fas fa-user-plus me-1"></i> Add Staff
+            </a>
+        </div>
+    </div>
+    
+<div>
+    <div>
+        <h4 class="dash-header">Today's Booking</h4>
+    </div>
+    <div class="table-responsive mb-4 box">
+        <table class="table table-hover  align-middle">
+                    <thead class="table-light ">
+                        <tr>
+                            <th class=" gradient-first">User</th>
+                            <th class=" gradient-mid">Phone</th>
+                            <th class=" gradient-mid">Service(s)</th>
+                            <th class=" gradient-mid">Time</th>
+                            <th class=" gradient-mid">Staff</th>
+                            <th class=" gradient-mid">Status</th>
+                            <th class='gradient-last'>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="dash-font">
+                        {% for booking in today_bookings %}
+                        <tr>
+                            <td>{{ booking.user.username }}</td>
+                            <td>{{ booking.user.userprofile.phone_number }}</td>
+                            <td>
+                                {% for service in booking.services.all %}
+                                    {{ service.name }}<br>
+                                {% endfor %}
+                            </td>
+                            <td>{{ booking.time_slot }}</td>
+                            <td>{% if booking.staff %}{{ booking.staff.user.username }}{% else %}<span class="text-muted">N/A</span>{% endif %}</td>
+                            <td>
+                                {% if booking.status == "Confirmed" %}
+                                    <span class="badge bg-primary">{{ booking.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ booking.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if booking.status == 'Confirmed' %}
+                                    <a href="{% url 'dashboard_complete_booking' booking.id %}" class="btn btn-success btn-sm">Complete</a>
+                                    <a href="{% url 'dashboard_cancel_booking' booking.id %}" class="btn btn-danger btn-sm">Cancel</a>
+                                {% else %}
+                                    <span class="text-muted">No actions</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No bookings for today.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+    </div>
+</div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h4 class="mb-0 dash-header">Upcoming Bookings ({{ upcoming_bookings.count }})</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                           
+                            <th class=" gradient-first">User</th>
+                            <th class=" gradient-mid">Phone</th>
+                            <th class=" gradient-mid">Service(s)</th>
+                            <th class=" gradient-mid">Time</th>
+                            <th class=" gradient-mid">Staff</th>
+                            <th class=" gradient-mid">Status</th>
+                            <th class='gradient-last'>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="dash-font">
+                        {% for booking in upcoming_bookings %}
+                        <tr>
+                            <td>{{ booking.user.username }}</td>
+                            <td>{{ booking.date|date:"D, M d" }}</td>
+                            <td>{{ booking.time_slot }}</td>
+                            <td>{% if booking.staff %}{{ booking.staff.user.username }}{% else %}<span class="text-muted">N/A</span>{% endif %}</td>
+                            <td><span class="badge bg-primary">{{ booking.status }}</span></td>
+                            <td>
+                                <a href="{% url 'dashboard_cancel_booking' booking.id %}" class="btn btn-outline-danger btn-sm">Cancel</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No upcoming bookings.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h4 class="mb-0 dash-header">Past Bookings ({{ past_bookings.count }})</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            
+                            <th class=" gradient-first">User</th>
+                            <th class=" gradient-mid">Date</th>
+                            <th class=" gradient-mid">Staff</th>
+                            <th class=" gradient-mid">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="dash-font">
+                        {% for booking in previous_bookings %}
+                        <tr>
+                            <td >{{ booking.user.username }}</td>
+                            <td>{{ booking.date|date:"M d, Y" }}</td>
+                            <td>{% if booking.staff %}{{ booking.staff.user.username }}{% else %}<span class="text-muted">N/A</span>{% endif %}</td>
+                            <td>
+                                {% if booking.status == "Completed" %}
+                                    <span class="badge bg-success">{{ booking.status }}</span>
+                                {% elif booking.status == "Cancelled" %}
+                                    <span class="badge bg-danger">{{ booking.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ booking.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No past bookings found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

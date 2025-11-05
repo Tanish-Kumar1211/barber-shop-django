@@ -1,0 +1,141 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="booking-title">
+                <h2>My Bookings</h2>
+            </div>
+            
+
+            <div class="Bookings-card ">
+            <h3 class="booking-active">Active</h3>
+
+                {% for booking in bookings  %}
+                
+                <div class="box-shadow row mb-4 p-3">
+                        {% for service in booking.services.all %}
+                        <div class="booking-item mb-2 p-2 border rounded shadow-sm">
+                        
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="service-name">{{service.name}}</h5>
+                            
+                        </div>
+                        <div class="service-details">
+                            <div class="d-flex justify-content-between align-items-center">
+                            <p class="service-timing">
+                                {{booking.date}} at {{booking.time_slot}}
+                               
+                            </p>
+                            <strong>
+                                Rs. {{service.price|floatformat:2}}
+                            </strong>
+                            
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                            <p class="booking-status">
+                                Status: 
+                                {% if booking.status == "Confirmed" %}
+                                <span class="badge bg-primary">{{booking.status}}</span>
+                                {% elif booking.status == "Cancelled" %}
+                                <span class="badge bg-danger">{{booking.status}}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{booking.status}}</span>{% endif %}
+                            </p>
+                            <a href="{% url 'cancel_booking' booking.id%}" class="cancel-booking btn btn-sm btn-danger ">Cancel
+
+                            </a>
+                            </div>
+                            <p class="staff">
+                                Staff: {% if booking.staff %}
+        {{ booking.staff.user.username }}
+    {% else %}
+        Not Assigned
+    {% endif %} 
+                            </p> 
+
+                        </div>
+                     
+                       
+                        </div>
+                        
+                        {% endfor %}
+                        </div>
+                    
+                </div>
+                {% empty %}
+                <div class="no-past-booking mt-3">
+                    <p class="">No active bookings yet.</p>
+                
+            
+                {% endfor %}
+
+            <hr class="my-4" style="border-top: 2px solid #252c33ff;">
+            <div class="mt-5" >
+                <div class="booking-active">Past</div>
+                {% for booking in past_bookings  %}
+                <div class="box-shadow
+                    row mb-4 p-3">
+                        <h3 class="booking-past">Past</h3>
+                            {% for service in booking.services.all %}
+                            <div class="booking-item mb-2 p-2 border rounded shadow-sm">
+                            
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="service-name">{{service.name}}</h5>
+                                
+                            </div>
+                            <div class="service-details">
+                                <div class="d-flex justify-content-between align-items-center">
+                                <p class="service-timing">
+                                    {{booking.date}} at {{booking.time_slot}}
+                                
+                                </p>
+                                <strong>
+                                    Rs. {{service.price|floatformat:2}}
+                                </strong>
+                                
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                <p class="booking-status">
+                                    Status: 
+                                    {% if booking.status == "Confirmed" %}
+                                    <span class="badge bg-primary">{{booking.status}}</span>
+                                    {% elif booking.status == "Cancelled" %}
+                                    <span class="badge bg-danger">{{booking.status}}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{booking.status}}</span>{% endif %}
+                                </p>
+                                
+                                </div>
+                                <p class="staff">
+                                    Staff: {% if booking.staff %}
+        {{ booking.staff.user.username }}
+    {% else %}
+        Not Assigned
+    {% endif %}
+                                </p> 
+    
+                            </div>
+                        
+                        
+                            </div>
+                            
+                            {% endfor %}
+                            </div>
+                            {% empty %}
+                            <div class="no-past-booking mt-3">
+                                <p>No past bookings yet.</p>
+                            </div>
+                            {% endfor %}
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

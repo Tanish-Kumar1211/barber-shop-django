@@ -1,0 +1,87 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block title %}Your Cart & Booking{% endblock %}
+
+{% block content %}
+<div class="cart-page-container">
+    <div class="container py-5  ">
+        <div class="row ">
+
+            <!-- =============================== -->
+            <!-- === LEFT COLUMN: DATE & TIME === -->
+            <!-- =============================== -->
+            <div class="col-lg-7 mb-4  ">
+                <div class="card shadow-sm">
+                    <div class="card-body card-book">
+                        <h4 class="card-title mb-4">Select Date & Time of Appointment</h4>
+                        
+                        <!-- Date Selection Tabs -->
+                        <div class="date-tabs-container mb-4 ">
+                            {% for date_info in dates %}
+                                <div class="date-tab" data-date="{{ date_info.date|date:'Y-m-d' }}">
+                                    <div class="day-name">{{ date_info.day_name }}</div>
+                                    <div class="day-num">{{ date_info.day_num }} </div>
+                                    <div class="month">{{ date_info.month }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Time Slot Selection -->
+                        <h5 class="time-slot-title">Available Slots</h5>
+                        <div class="time-slots-container">
+                            {% for slot in time_slots %}
+                                <button type="button" class="btn time-slot" data-time="{{ slot }}">{{ slot }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================ -->
+            <!-- === RIGHT COLUMN: BILL DETAILS === -->
+            <!-- ================================ -->
+            <div class="col-lg-5 mb-4
+            ">
+                <div class="card shadow-sm">
+                    <div class="card-body card-book">
+                        <h4 class="card-title mb-4">Bill Details</h4>
+                        
+                        <!-- Cart Items -->
+                        <div class="bill-items">
+                            {% for item in cart_items %}
+                            <div class="bill-item d-flex justify-content-between align-items-center" id="cart-item-{{item.id}}">
+                            <div >
+                                <span>{{ item.name }}</span>
+                                <strong class="d-block">Rs. {{ item.price|floatformat:2 }}</strong>
+                            </div>
+                            {% comment %} button for removing services {% endcomment %}
+                            <button class="btn btn-sm btn-outline-danger remove-from-cart-btn" data-service-id="{{item.id}}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">Your cart is empty.</p>
+                            {% endfor %}
+                        </div>
+                        
+                        <hr>
+
+                        <!-- Total Price -->
+                        <div class="bill-total">
+                            <strong>Total</strong>
+                            <strong id="total-price">Rs. {{ total_price|floatformat:2 }}</strong>
+                        </div>
+                        
+                        <button class="btn btn-custom-purple w-100 mt-4 book-appointment">Book Appointment</button>
+                        
+                        <p class=" small text-center mt-3">By booking an appointment you agree to our Terms of Service and Privacy Policy.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

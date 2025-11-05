@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block title %}Home - Royal Barber{% endblock %}
+
+
+{% block content %}
+
+{% comment %} Hero Section {% endcomment %}
+<section class='hero-section' id="home">
+    <div class="container py-5">
+        <div class="row align-items-center">
+
+            {% comment %} left side rkhne ke liye {% endcomment %}
+            <div class="col-md-6">
+                <h1 class="hero-title">Elevate Your Presence</h1>
+                <p class="hero-subtitle"> Step into Royal Barber, where grooming meets sophistication. Our master barbers craft tailored styles that exude confidence, class, and timeless elegance.</p>
+                <a href="#services" class="btn btn-custom-purple">Book Now</a>
+            </div>
+
+            {% comment %} Right side rkhne ke liye {% endcomment %}
+            <div class="col-md-6">
+                <div class="hero-image-container">
+                    <img src="{% static 'barber/images/main.jpg' %}" alt="barber Styling Hair" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% comment %} Features Section {% endcomment %}
+<section class="features-section">
+    <div class="container py-5">
+        <div class="row text-center ">
+            <!-- Feature 1: Classic Haircut -->
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <i class="fas fa-cut fa-3x mb-3 royal-color"></i>
+                    <h5 class=" service-tag
+                    ">Classic Haircut</h5>
+                    <p class="card-text text-muted">Traditional barbering with modern techniques</p>
+                </div>
+            </div>
+            <!-- Feature 2: Beard Grooming -->
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <i class="fas fa-user-tie fa-3x mb-3 royal-color"></i>
+                    <h5 class=" service-tag">Beard Grooming</h5>
+                    <p class="card-text text-muted">Expert beard trimming and styling for a sharp look</p>
+                </div>
+            </div>
+            <!-- Feature 3: Hot Towel Shave -->
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <i class="fas fa-spa fa-3x mb-3 royal-color"></i>
+                    <h5 class="service-tag  
+                    ">Hot Towel Shave</h5>
+                    <p class="card-text text">A relaxing and luxurious shaving experience</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% comment %} Services Section {% endcomment %}
+<section class="services-section" id="services">
+    <div class="container py-5">
+        {% comment %} section Title {% endcomment %}
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title">Our Services</h2>
+            </div>
+        </div>
+        
+        {% comment %} Servies Cards {% endcomment %}
+        <div class="row">
+            <!-- Card 1: Haircut -->
+           {% for service in services %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="service-card">
+                    <img src="{{ service.image.url }}" class="card-img-top" alt="{{service.name}}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ service.name }}</h5>
+                        <p class="card-text">{{ service.description }}</p>
+                       <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                        <p class="time-set">{{ service.duration}} minutes</p>
+                        <p class="price">Rs. {{ service.price }}</p>
+                          </div>
+                        </div>
+                        <a href="JavaScript:void(0)" class="btn btn-add-to-cart mt-3 " data-service-id="{{service.id}}">Add to Cart</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+          
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}

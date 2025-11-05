@@ -1,0 +1,692 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Royal Barber{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'barber/css/design.css' %}">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
+</head>
+<body>
+
+  
+    <!-- === NAYA POPUP (TOAST) KA SAHI STRUCTURE === -->
+    <div id="toast-notification">
+        <span id="toast-icon"></span>
+        <span id="toast-message"></span>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}#home">
+                <h3 class="my-0 fw-bold">
+                    <span class="royal-color"><i class='fa-solid fa-scissors'></i>Royal</span>Barber
+                </h3>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link px-4" href="{% url 'home' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link px-4" href="{% url 'home' %}#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link px-4" href="{% url 'home' %}#contact">Contact</a></li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item"><a href="{% url 'my_bookings' %}" class="nav-link">My Bookings</a></li>
+                    {% if user.is_staff %}
+                    <li class="nav-item"><a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a></li>
+                    {% endif %}
+                    {% endif %}
+                </ul>
+                <div class="d-flex">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'cart' %}" class="royal-cart me-3 fs-4"><i class='fas fa-shopping-cart'></i>{% if cart_count > 0  %}
+                        <span class="cart-badge position-absolute badge bg-danger rounded-pill ">{{ cart_count }}</span>
+
+                        {% endif %}</a>
+                    <a class="btn btn-warning px-3.5" href="{% url 'logout' %}">Logout</a>
+                    {% else %}
+                    <button type="button" class="login_button btn btn-outline-light btn-round mx-2" data-bs-toggle="modal" data-bs-target="#authModal" data-auth-action="login">
+                        Login
+                    </button>
+                    <button type="button" class="btn btn-warning btn-round" data-bs-toggle="modal" data-bs-target="#authModal" data-auth-action="signup">
+                        Sign Up
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    {% comment %} pop for cancel_booking {% endcomment %}
+    {% if messages %}
+        <div class="container mt-3"> {% for message in messages %}
+                <div class="alert 
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}alert-danger{% else %}alert-success{% endif %} 
+                    alert-dismissible fade show" 
+                    role="alert">
+
+                    {{ message }} <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% block content %}
+    {% endblock %}
+    
+
+    <footer class="footer-section" id="contact">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5 class="fw-bold"><span class="royal-color">Royal</span>Barber</h5>
+                    <p>Luxury Grooming & Timeless Style. Experience the art of classic barbering with a modern touch.</p>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5 class="fw-bold">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'home' %}#home" class="footer-link">Home</a></li>
+                        <li><a href="{% url 'home' %}#services" class="footer-link">Services</a></li>
+                        <li><a href="{% url 'home' %}#contact" class="footer-link">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="fw-bold">Get In Touch</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>123 Barber Lane, New Delhi</li>
+                        <li class="mb-2"><i class="fas fa-phone-alt me-2"></i>+91 99999 99999</li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="fw-bold">Follow Us</h5>
+                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="text-center text-muted border-top pt-3 mt-3">
+                        <p class="mb-0">&copy; 2025 RoyalBarber. All Rights Reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AUTH MODAL -->
+    <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered auth-dialog">
+            <div class="modal-content auth-content">
+                <div class="auth-container" id="auth-container">
+                    <!-- Sign Up Form - ✅ ID aur NAME attributes add kiye -->
+                    <div class="form-container sign-up-container">
+                        <form id="signupForm">
+                            {% csrf_token %}
+                            <h1 class='form-title'>Create Account</h1>
+                            <input class='form-input' type="text" name="username" placeholder="Username" required />
+                            <input class='form-input' type="email" name="email" placeholder="Email" required />
+                            <input class='form-input' type="tel" name="phone_number" placeholder="Phone Number" required />
+                            <input class='form-input' type="password" name="password1" placeholder="Password" required />
+                            <input class='form-input' type="password" name="password2" placeholder="Confirm Password" required />
+                            <button type="submit" class='sign-up-pad'>Sign Up</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Login Form -->
+                    <div class="form-container sign-in-container">
+                        <form id="loginForm">
+                            {% csrf_token %}
+                            <h1>Sign in</h1>
+                            <input class='form-input' type="text" name="username" placeholder="Username" required />
+                            <input class='form-input' type="password" name="password" placeholder="Password" required />
+                            <a href="{% url 'password_reset_phone' %}">Forgot your password?</a>
+                            <button type="submit">Sign In</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Sliding Overlay -->
+                    <div class="overlay-container">
+                        <div class="overlay">
+                            <div class="overlay-panel overlay-left">
+                                <h1>Welcome Back!</h1>
+                                <p>To keep connected with us please login with your personal info</p>
+                                <button class="ghost" id="signIn">Sign In</button>
+                            </div>
+                            <div class="overlay-panel overlay-right">
+                                <h1>Hello, Friend!</h1>
+                                <p>Enter your personal details and start journey with us</p>
+                                <button class="ghost" id="signUp">Sign Up</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP MODAL -->
+    <div class="modal fade" id="otpModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content min-height">
+                <div class="modal-header text-center">
+                    <h5 class="header-title w-100">Verify OTP</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="otpForm">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            
+                            <input type="text" class="form-control" name="otp" id="otp-input" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100">Verify </button>
+                    </form>
+                    </div>
+                
+            </div>
+        </div>
+    </div>
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Smooth Scroll -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    
+    // 1. --- GLOBAL FUNCTIONS ---
+    // (Inko bahar rakho taaki sab use kar sakein)
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken'); // CSRF token ko global banao
+
+    // Toast Popup Function (Global)
+    function showToast(message, isSuccess = true) {
+        const toastEl = document.getElementById('toast-notification');
+        const toastMessage = document.getElementById('toast-message');
+        const toastIcon = document.getElementById('toast-icon');
+        if (!toastEl) return;
+        toastMessage.textContent = message;
+        toastIcon.innerHTML = isSuccess ? `<i class="fas fa-check-circle text-success"></i>` : `<i class="fas fa-times-circle text-danger"></i>`;
+        toastEl.classList.add('show');
+        setTimeout(() => toastEl.classList.remove('show'), 2500);
+    }
+    
+    // Auto-hide alert messages (for Cancel Booking, etc.)
+    function autoHideAlerts() {
+        const alerts = document.querySelectorAll('.alert-dismissible');
+        alerts.forEach((alert) => {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                if (bsAlert) { // Check if bootstrap alert component is loaded
+                    bsAlert.close();
+                } else {
+                    alert.style.display = 'none'; // Fallback
+                }
+            }, 3000); // 3 seconds
+        });
+    }
+
+    // Helper function (chat mein naya message add karne ke liye)
+    function addMessageToChat(text, className, id = null) {
+        const chatMessages = document.getElementById('chat-messages');
+        if (!chatMessages) return; // Agar chat window nahi hai toh kuch mat karo
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message ' + className;
+        messageDiv.textContent = text;
+        if (id) messageDiv.id = id;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight; 
+    }
+
+    // 2. --- DOMCONTENTLOADED LISTENER ---
+    // (Yeh tab chalega jab poora HTML load ho jaayega)
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Auto-hide alerts chalao
+        autoHideAlerts();
+
+        // --- Smooth Scroll (Har page par chalega) ---
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                if (!e.target.closest('.btn-add-to-cart')) {
+                    const targetId = this.getAttribute('href');
+                    if(targetId !== '#' && document.querySelector(targetId)) {
+                        e.preventDefault();
+                        document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+
+        // --- Auth Modal Animation (Sirf agar elements maujood hain) ---
+        const signUpButton = document.getElementById('signUp');
+        const signInButton = document.getElementById('signIn');
+        const container = document.getElementById('auth-container');
+        const authModal = document.getElementById('authModal');
+        
+        if (container && signUpButton && signInButton) { 
+            signUpButton.addEventListener('click', () => container.classList.add("right-panel-active"));
+            signInButton.addEventListener('click', () => container.classList.remove("right-panel-active"));
+        }
+        if (authModal && container) {
+            authModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                if (button) {
+                    const action = button.getAttribute('data-auth-action');
+                    if (action === 'signup') {
+                        container.classList.add('right-panel-active');
+                    } else {
+                        container.classList.remove('right-panel-active');
+                    }
+                }
+            });
+        }
+
+        // --- OTP & Login Forms (Sirf agar elements maujood hain) ---
+        const authModalEl = document.getElementById('authModal');
+        const otpModalEl = document.getElementById('otpModal');
+        const signupForm = document.getElementById('signupForm');
+        const otpForm = document.getElementById('otpForm');
+        const loginForm = document.getElementById('loginForm');
+        
+        if (authModalEl && otpModalEl && signupForm && otpForm) {
+            const authModalInstance = new bootstrap.Modal(authModalEl);
+            const otpModalInstance = new bootstrap.Modal(otpModalEl);
+
+            signupForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                fetch("{% url 'send_otp' %}", {
+                    method: 'POST', body: new FormData(this), headers: { 'X-CSRFToken': csrftoken }
+                }).then(res => res.json()).then(data => {
+                    if (data.status === 'success') {
+                        authModalInstance.hide();
+                        otpModalInstance.show();
+                    } else { showToast('Error: ' + data.message, false); }
+                });
+            });
+
+            otpForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                fetch("{% url 'verify_otp' %}", {
+                    method: 'POST', body: new FormData(this), headers: { 'X-CSRFToken': csrftoken }
+                }).then(res => res.json()).then(data => {
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    } else { showToast('Error: ' + data.message, false); }
+                });
+            });
+        }
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                fetch("{% url 'login' %}", {
+                    method: 'POST', body: new FormData(this), headers: { 'X-CSRFToken': csrftoken }
+                }).then(res => res.json()).then(data => {
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    } else { showToast('Error: ' + data.message, false); }
+                });
+            });
+        }
+
+        // --- Cart Page Logic (Sirf agar cart elements maujood hain) ---
+        let selectedDate = null;
+        let selectedTime = null;
+        
+        const dateTabs = document.querySelectorAll('.date-tab');
+        if (dateTabs.length > 0) { // Check karo ki date tabs hain ya nahi
+            dateTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    dateTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedDate = this.dataset.date;
+                });
+            });
+        }
+        
+        const timeSlots = document.querySelectorAll('.time-slot');
+        if (timeSlots.length > 0) { // Check karo ki time slots hain ya nahi
+            timeSlots.forEach(slot => {
+                slot.addEventListener('click', function() {
+                    timeSlots.forEach(s => s.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedTime = this.dataset.time;
+                });
+            });
+        }
+        
+        // Payment Button Logic (Sirf agar button maujood hai)
+        const bookAppointmentBtn = document.querySelector(".book-appointment"); // Class use ki hai
+        if (bookAppointmentBtn) {
+            bookAppointmentBtn.addEventListener('click', function() {
+                if (!selectedDate || !selectedTime) {
+                    showToast("Please select a date and time slot.", false);
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('date', selectedDate);
+                formData.append('time_slot', selectedTime);
+
+                fetch("{% url 'start_payment' %}", {
+                    method: 'POST', headers: { 'X-CSRFToken': csrftoken }, body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success'){
+                        const options = {
+                            key: data.key,
+                            amount: data.amount,
+                            currency: data.currency,
+                            name: data.name,
+                            order_id: data.order_id,
+                            handler: function (response) {
+                                const successData = new FormData();
+                                successData.append('razorpay_payment_id', response.razorpay_payment_id);
+                                successData.append('razorpay_order_id', response.razorpay_order_id);
+                                successData.append('razorpay_signature', response.razorpay_signature);
+
+                                fetch("{% url 'handle_payment_success' %}", {
+                                    method: 'POST', headers: { 'X-CSRFToken': csrftoken }, body: successData
+                                })
+                                .then(res => res.json())
+                                .then(successRes => {
+                                    if(successRes.status === 'success'){
+                                        showToast("Booking Confirmed! Redirecting...");
+                                        window.location.href = "{% url 'my_bookings' %}";
+                                    } else {
+                                        showToast(successRes.message || "Payment verification failed!", false);
+                                    }
+                                });
+                            },
+                            prefill: {
+                                name: data.user_name,
+                                email: data.user_email,
+                                contact: data.user_phone
+                            },
+                            theme: { color: '#8A2BE2' }
+                        };
+                        const rzp = new Razorpay(options);
+                        rzp.open();
+                    } else {
+                        showToast(data.message || "Something went wrong!", false);
+                    }
+                }).catch(error => {
+                    console.error("Error:", error);
+                    showToast("Something went wrong. Please try again.", false);
+                });
+            });
+        }
+
+        // --- AI Assistant Logic (Sirf agar elements maujood hain) ---
+        const chatIcon = document.getElementById('chat-icon');
+        const chatWindow = document.getElementById('chat-window');
+        const closeBtn = document.getElementById('chat-close-btn');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        
+        if (chatIcon && chatWindow && closeBtn && chatForm && chatInput) {
+            chatIcon.addEventListener('click', () => {
+                chatWindow.style.display = 'flex';
+                chatIcon.style.display = 'none';
+            });
+            closeBtn.addEventListener('click', () => {
+                chatWindow.style.display = 'none';
+                chatIcon.style.display = 'flex';
+            });
+
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const question = chatInput.value.trim();
+                if (question === "") return;
+                addMessageToChat(question, 'user-message');
+                chatInput.value = "";
+                addMessageToChat("Typing...", 'ai-message', 'typing-indicator');
+
+                fetch("{% url 'ask_ai' %}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                    body: JSON.stringify({ 'question': question })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const typing = document.getElementById('typing-indicator');
+                    if (typing) typing.remove();
+                    if (data.answer) {
+                        addMessageToChat(data.answer, 'ai-message');
+                    } else {
+                        addMessageToChat(data.error || 'Sorry, I faced an error.', 'ai-message');
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch Error:', error);
+                    const typing = document.getElementById('typing-indicator');
+                    if (typing) typing.remove();
+                    addMessageToChat('Sorry, I am unable to connect.', 'ai-message');
+                });
+            });
+        }
+
+        // --- EVENT DELEGATION (Har page par chalega) ---
+        // (Add to Cart, Remove from Cart)
+        document.body.addEventListener('click', function (e) {
+            
+            // Add to Cart
+            const addToCartBtn = e.target.closest('.btn-add-to-cart');
+            if (addToCartBtn) {
+                e.preventDefault();
+                const serviceId = addToCartBtn.dataset.serviceId;
+                if (addToCartBtn.classList.contains('added')) return;
+                
+                fetch(`/add_to_cart/${serviceId}/`, {
+                    method: "POST", headers: { "X-CSRFToken": csrftoken },
+                }).then(res => res.json()).then(data => {
+                    if (data.status === "success") {
+                        showToast(`${data.service_name} added to cart!`);
+                        addToCartBtn.classList.add('added');
+                        addToCartBtn.textContent = 'Added';
+                        addToCartBtn.disabled = true;
+                        
+                        // Update cart count (pichhla code yahaan hai)
+                        const cartBadge = document.querySelector('.cart-badge');
+                        const cartIconLink = document.querySelector('.navbar a[href*="/cart/"]');
+                        if (data.new_cart_count > 0) {
+                            if (cartBadge) {
+                                cartBadge.textContent = data.new_cart_count;
+                            } else if (cartIconLink) {
+                                const newBadge = document.createElement('span');
+                                newBadge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge';
+                                newBadge.textContent = data.new_cart_count;
+                                cartIconLink.appendChild(newBadge);
+}
+                        } else {
+                            if (cartBadge) cartBadge.remove();
+                        }
+                    } else if (data.message === "login_required") {
+                        const authModal = new bootstrap.Modal(document.getElementById('authModal'));
+                        authModal.show();
+                    } else { showToast("Something went wrong!", false); }
+                });
+            }
+
+            // Remove from Cart
+            const removeFromCartBtn = e.target.closest('.remove-from-cart-btn');
+            if (removeFromCartBtn) {
+                e.preventDefault();
+                const serviceId = removeFromCartBtn.dataset.serviceId;
+                const cartItemRow = document.getElementById(`cart-item-${serviceId}`);
+                
+                fetch(`/remove_from_cart/${serviceId}/`, {
+                    method: "POST", headers: { "X-CSRFToken": csrftoken },
+                }).then(res => res.json()).then(data => {
+                    if (data.status === "success") {
+                        showToast('Service removed from cart');
+                        if (cartItemRow) {
+                            cartItemRow.style.opacity = '0';
+                            setTimeout(() => cartItemRow.remove(), 300);
+                        }
+                        const totalPriceEl = document.getElementById('total-price');
+                        if (totalPriceEl) {
+                            totalPriceEl.textContent = `Rs. ${data.new_total}`;
+                        }
+                        
+                        // Update cart count (pichhla code yahaan hai)
+                        const cartBadge = document.querySelector('.cart-badge');
+                        const cartIconLink = document.querySelector('.navbar a[href*="/cart/"]');
+                        if (data.new_cart_count > 0) {
+                            if (cartBadge) {
+                                cartBadge.textContent = data.new_cart_count;
+                            } else if (cartIconLink) {
+                                const newBadge = document.createElement('span');
+                                newBadge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge';
+                                newBadge.textContent = data.new_cart_count;
+                                cartIconLink.appendChild(newBadge);
+                            }
+                        } else {
+                            if (cartBadge) cartBadge.remove();
+                        }
+                    } else { showToast("Could not remove item.", false); }
+                });
+            }
+        }); // --- Event Delegation khatam ---
+
+    }); // --- DOMContentLoaded khatam ---
+    
+    </script>
+
+<div id="chat-icon">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+
+    <div id="chat-window" style="display: none;">
+        <div id="chat-header">
+            <span>Royal AI Assistant</span>
+            <button id="chat-close-btn">&times;</button>
+        </div>
+        <div id="chat-messages">
+            <div class="message ai-message">Hi! How can I help you with your booking today?</div>
+        </div>
+        <form id="chat-form">
+            <input type="text" id="chat-input" placeholder="Type your question..." required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <style>
+        #chat-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #8A2BE2; /* Aapka purple color */
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 999;
+        }
+        #chat-window {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 450px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: none; /* JS isse badlega */
+            flex-direction: column;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        #chat-header {
+            background-color: #8A2BE2; /* Aapka purple color */
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #chat-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        #chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto; /* Messages ko scrollable banata hai */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #f1f1f1;
+            align-self: flex-end; /* User ke message right mein */
+        }
+        .ai-message {
+            background-color: #e8dff5; /* AI ke message light purple */
+            align-self: flex-start; /* AI ke message left mein */
+        }
+        #chat-form {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+        #chat-input {
+            flex-grow: 1;
+            border: none;
+            padding: 15px;
+            font-size: 14px;
+        }
+        #chat-input:focus { outline: none; }
+        #chat-form button {
+            background-color: #8A2BE2; /* Aapka purple color */
+            color: white;
+            border: none;
+            padding: 0 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</body>
+</html>
