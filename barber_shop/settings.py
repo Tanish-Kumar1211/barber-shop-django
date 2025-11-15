@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,10 +22,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY','django-insecure-@1y5tyw!-deia!y#%@tu%bfyp3z_a)sb@3#lwf2a-dp&l$-lw$')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-@1y5tyw!-deia!y#%@tu%bfyp3z_a)sb@3#lwf2a-dp&l$-lw$')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+IS_RENDER=os.environ.get('RENDER','False') == 'True'
+if IS_RENDER:
+    DEBUG =False
+else:
+    DEBUG = True
+
 ALLOWED_HOSTS = ['*']
 
 
@@ -38,10 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "livereload",
+    'livereload',
     'barber',
-    "django_browser_reload",
-
+    'django_browser_reload',
 ]
 
 MIDDLEWARE = [
@@ -53,8 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
-
+    'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
 
 ROOT_URLCONF = 'barber_shop.urls'
@@ -62,10 +65,11 @@ ROOT_URLCONF = 'barber_shop.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -81,8 +85,14 @@ WSGI_APPLICATION = 'barber_shop.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+DATABASE_URL=os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+    }
+else:
+    DATABASES = {
+        'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'royal_barber',
         'USER': 'root',
@@ -90,11 +100,8 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '3306',
     }
-}
-import dj_database_url
-db_from_env = dj_database_url.config(conn_max_age=600)
-if db_from_env:
-    DATABASES['default'].update(db_from_env)
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -130,32 +137,37 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-# barbershop/settings.py
+STATIC_URL = '/static/'
 
-# STATIC_URL = '/static/'
+# Directory where you put your static files during development
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'static'),
-# ]
+# Directory where collectstatic will collect static files for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Whitenoise configuration for serving static files in production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# Media files (User uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
-STATIC_URL = '/static/' # below this add the following line
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # 2FACTOR.IN CREDENTIALS
-TWOFACTOR_API_KEY =  os.environ.get('TWOFACTOR_API_KEY','dbaab643-9dca-11f0-b922-0200cd936042')
+TWOFACTOR_API_KEY = os.environ.get('TWOFACTOR_API_KEY', 'dbaab643-9dca-11f0-b922-0200cd936042')
 
-# For Razorpay
-RAZORPAY_KEY_ID= os.environ.get('RAZORPAY_KEY_ID',"rzp_test_RS9BJsiSzpwczv")
-RAZORPAY_KEY_SECRET= os.environ.get('RAZORPAY_KEY_SECRET',"YBCIHMzqifQ2toJQbkAvPtIW")
+# Razorpay Configuration
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_RS9BJsiSzpwczv')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'YBCIHMzqifQ2toJQbkAvPtIW')
 
-# AI assistant key
-GEMINI_API_KEY= os.environ.get('GEMINI_API_KEY','AIzaSyBMv6KfWutU-mUty2pRiW-vf9tKItr4n_I')
+# AI Assistant Configuration
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyBMv6KfWutU-mUty2pRiW-vf9tKItr4n_I')
