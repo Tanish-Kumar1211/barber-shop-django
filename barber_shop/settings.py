@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'livereload',
     'barber',
-    'django_browser_reload',
+    # 'django_browser_reload',
 ]
 
 MIDDLEWARE = [
