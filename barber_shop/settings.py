@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'livereload',
     'barber',
     'cloudinary_storage',         
-    'django.contrib.staticfiles',
     'cloudinary',
 ]
 
