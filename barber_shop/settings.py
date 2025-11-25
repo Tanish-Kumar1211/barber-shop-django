@@ -45,6 +45,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'livereload',
     'barber',
+    'cloudinary_storage',         
+    'django.contrib.staticfiles',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -149,6 +152,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 # Media files (User uploaded files)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -169,3 +173,10 @@ RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'YBCIHMzqifQ2toJQbkA
 
 # AI Assistant Configuration
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyBMv6KfWutU-mUty2pRiW-vf9tKItr4n_I')
+
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('dglrl5ofa'),
+    'API_KEY': os.environ.get('711655691329329'),
+    'API_SECRET': os.environ.get('MIQPXtA5a4EDqxZa3uzoF5MXxo4'),
+}
