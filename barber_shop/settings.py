@@ -175,7 +175,7 @@ GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyBMv6KfWutU-mUty2pRiW-vf
 
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('dglrl5ofa'),
-    'API_KEY': os.environ.get('711655691329329'),
-    'API_SECRET': os.environ.get('MIQPXtA5a4EDqxZa3uzoF5MXxo4'),
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
